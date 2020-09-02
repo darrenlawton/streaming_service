@@ -32,7 +32,7 @@ class kinesisConsumer:
 
         return stream_frequency
 
-    def run(self, event):
+    def run(self):
         """
         Poll stream for new record and pass to processing method
         """
@@ -40,8 +40,7 @@ class kinesisConsumer:
                                                   ShardId=self.shard_id,
                                                   ShardIteratorType=self.iterator)
         iteration = response['ShardIterator']
-
-        while not event.is_set():
+        while True:
             try:
                 response = self.client.get_records(ShardIterator=iteration)
                 records = response['Records']
@@ -50,7 +49,6 @@ class kinesisConsumer:
                     self.process_records(records)
 
                 iteration = response['NextShardIterator']
-                # print("{}, {}",(response['MillisBehindLatest'], response['NextShardIterator']))
                 self.stream_freq = self.set_frequency(response['MillisBehindLatest'])
                 time.sleep(self.stream_freq)
 

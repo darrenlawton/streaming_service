@@ -1,6 +1,6 @@
 import logging
 import boto3
-import time, datetime
+import datetime
 import threading
 import pickle
 from botocore.exceptions import ClientError
@@ -23,22 +23,18 @@ class kinesisProducer(threading.Thread):
         except ClientError as e:
             logger.error("Put failed at %s ." % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
-    def run(self, generator_function, event):
+    def run(self, item_update=None):
         """
         :param generator_function: lambda function i.e. stream_data(lambda: generator_function(#args))
         """
-        while True:
-            try:
-                data = generator_function()
-                if data is not None: self.put_record(data)
-                time.sleep(self.stream_freq)
-            except self.client.exceptions.ResourceNotFoundException:
-                event.set()
-                logger.error("Stream not found. Terminating processes")
-                break
-            except ClientError as e:
-                logger.error("Error occurred whilst streaming {}".format(e))
-                continue
+        try:
+            if item_update is not None:
+                self.put_record(item_update)
+        except self.client.exceptions.ResourceNotFoundException:
+            logger.error("Stream not found. Terminating processes")
+        except ClientError as e:
+            logger.error("Error occurred whilst streaming {}".format(e))
+
 
 
 
