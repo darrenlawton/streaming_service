@@ -1,9 +1,13 @@
 import os
 import sys
+import logging
 import boto3
 import time, datetime
 import pickle
 from botocore.exceptions import ClientError
+import config
+
+logger = logging.getLogger(__name__)
 
 
 class kinesisConsumer:
@@ -15,21 +19,21 @@ class kinesisConsumer:
         self.iterator = iterator
         self.stream_freq = self.set_frequency()
 
-    @staticmethod
-    def iterate_records(records):
-        for r in records:
-            partition_key = r['PartitionKey']
-            data = pickle.loads(r['Data'])
-
-        yield partition_key, data
+    # @staticmethod
+    # def iterate_records(records):
+    #     for r in records:
+    #         partition_key = r['PartitionKey']
+    #         data = pickle.loads(r['Data'])
+    #         print(data)
+    #     yield partition_key, data
 
     @staticmethod
     def set_frequency(MillisBehindLatest=0):
-        stream_frequency = dc.CONSUMER_STREAM_FREQ
+        stream_frequency = config.CONSUMER_STREAM_FREQ
 
         try:
             if MillisBehindLatest > 0:
-                stream_frequency = stream_frequency / dc.CONSUMER_CATCHUP
+                stream_frequency = stream_frequency / config.CONSUMER_CATCHUP
         except ClientError as e:
             print("could not set consumer frequency: {}".format(e))
             pass
@@ -54,6 +58,7 @@ class kinesisConsumer:
                     self.process_records(records)
 
                 iteration = response['NextShardIterator']
+                # print("{}, {}",(response['MillisBehindLatest'], response['NextShardIterator']))
                 self.stream_freq = self.set_frequency(response['MillisBehindLatest'])
                 time.sleep(self.stream_freq)
 
@@ -66,9 +71,10 @@ class kinesisConsumer:
 
 class consumeData(kinesisConsumer):
     def process_records(self, records):
-        for partition_key, data_blob in self.iterate_records(records):
-            for record in data_blob:
-                try:
-                    pass
-                except KeyError:
-                    pass
+        print("processssing")
+        for r in records:
+            partition_key = r['PartitionKey']
+            data = pickle.loads(r['Data'])
+            print(data)
+        # for partition_key, data_blob in self.iterate_records(records):
+        #     # print("{}: {}".format(partition_key, data_blob))
