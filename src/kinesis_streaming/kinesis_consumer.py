@@ -19,14 +19,6 @@ class kinesisConsumer:
         self.iterator = iterator
         self.stream_freq = self.set_frequency()
 
-    # @staticmethod
-    # def iterate_records(records):
-    #     for r in records:
-    #         partition_key = r['PartitionKey']
-    #         data = pickle.loads(r['Data'])
-    #         print(data)
-    #     yield partition_key, data
-
     @staticmethod
     def set_frequency(MillisBehindLatest=0):
         stream_frequency = config.CONSUMER_STREAM_FREQ
@@ -71,10 +63,7 @@ class kinesisConsumer:
 
 class consumeData(kinesisConsumer):
     def process_records(self, records):
-        print("processssing")
         for r in records:
-            partition_key = r['PartitionKey']
             data = pickle.loads(r['Data'])
             print(data)
-        # for partition_key, data_blob in self.iterate_records(records):
-        #     # print("{}: {}".format(partition_key, data_blob))
+

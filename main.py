@@ -57,10 +57,9 @@ if __name__ == '__main__':
 
     if not os.path.exists('logs'):
         os.mkdir('logs')
-    file_handler = RotatingFileHandler('logs/steaming_service.log', backupCount=10)
+    file_handler = RotatingFileHandler('logs/steaming_service.log', maxBytes=10240, backupCount=10)
     file_handler.setFormatter\
         (logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
-    # file_handler.setLevel(logging.ERROR)
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
     logger.addHandler(file_handler)
