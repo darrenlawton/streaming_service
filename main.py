@@ -27,14 +27,12 @@ def start_process(process_obj):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Let\'s get streamy.')
-    parser.add_argument('-n', help='Stream name', required=True)
-    parser.add_argument('-p', help='Partition key', required=True)
     parser.add_argument('-s', help='Number of shards', required=True)
     parser.add_argument('-u', help='AWS profile')
     args = parser.parse_args()
 
-    input_stream_name = args.n
-    input_partition_key = args.p
+    stream_name = config.STREAM_NAME
+    partition_key = config.PARTITION_KEY
     n_shards = int(args.s)
     aws_profile = args.u
 
@@ -50,23 +48,22 @@ if __name__ == '__main__':
 
     # Create kinesis stream
     if aws_profile:
-        kinesis_stream = kinesis_stream.kinesisStream(input_stream_name, n_shards, aws_profile)
+        kinesis_stream = kinesis_stream.kinesisStream(stream_name, n_shards, aws_profile)
     else:
-        kinesis_stream = kinesis_stream.kinesisStream(input_stream_name, n_shards)
+        kinesis_stream = kinesis_stream.kinesisStream(stream_name, n_shards)
 
     if kinesis_stream.create_stream():
-        print("stream active")
-        cons = multiprocessing.Process(name='consumer', target=trigger_consumer, args=(input_stream_name, ))
+        cons = multiprocessing.Process(name='consumer', target=trigger_consumer, args=(stream_name, ))
         start_process(cons)
-        print("consumer launched")
+
         # create producer
-        producer = kinesis_producer.kinesisProducer(input_stream_name, input_partition_key)
-        print("producer launched")
+        # make while loop here for input start time and input end time
+        producer = kinesis_producer.kinesisProducer(stream_name, partition_key)
         ig_client = generator.ig_streamer(secrets.API_key, secrets.login_details)
-        print("ig client created")
-        ig_client.trigger_stream(producer.run)
-        print("let's stream...")
+        ig_client.trigger_stream(producer.run, ['MARKET:CS.D.BITCOIN.CFD.IP', 'MARKET:CS.D.ETHUSD.CFD.IP'])
+
         time.sleep(90)
+        ig_client.disconnect_session()
         kinesis_stream.terminate_stream()
 
 # python3.6 src/stream_launcher.py -n "test" -p  "test" -s 1
