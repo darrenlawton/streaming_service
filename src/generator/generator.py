@@ -13,8 +13,9 @@ class ig_streamer:
         self.session = IG_streaming_session(api_key=self.api_key, ulogin_details=self.login_details)
 
     def trigger_stream(self, listening_method, epic_list):
+        formatted_epic_list = [config.LEFT_ID + epic + config.RIGHT_ID for epic in epic_list]
         if not self.session is None:
-            px_subscription = Subscription(config.LIGHTSTREAMER_SUBSCRIPTION, epic_list,
+            px_subscription = Subscription(config.LIGHTSTREAMER_SUBSCRIPTION, formatted_epic_list,
                                            config.DATA_TO_STREAM)
             px_subscription.addlistener(listening_method)
             self.session.subscribe(px_subscription)
@@ -24,3 +25,4 @@ class ig_streamer:
     def disconnect_session(self):
         self.session.disconnect_session()
         self.session = None
+

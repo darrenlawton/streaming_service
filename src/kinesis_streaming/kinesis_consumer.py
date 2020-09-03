@@ -1,11 +1,10 @@
-import os
-import sys
 import logging
 import boto3
-import time, datetime
+import time
 import pickle
 from botocore.exceptions import ClientError
 import config
+from src.data_storage import writer
 
 logger = logging.getLogger(__name__)
 
@@ -56,12 +55,10 @@ class kinesisConsumer:
                 print("Error occurred whilst consuming stream {}".format(e))
                 time.sleep(1)
 
-        print("Consumer terminated.")
-
 
 class consumeData(kinesisConsumer):
-    def process_records(self, records):
+    @staticmethod
+    def process_records(records):
         for r in records:
             data = pickle.loads(r['Data'])
-            print(data)
-
+            writer.write_to_csv(data)

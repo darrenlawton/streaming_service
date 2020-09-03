@@ -10,12 +10,11 @@ logger = logging.getLogger(__name__)
 
 
 class kinesisProducer(threading.Thread):
-    def __init__(self, stream_name, partition_key, stream_freq=config.PRODUCER_STREAM_FREQ):
+    def __init__(self, stream_name, partition_key):
         super().__init__()
         self.client = boto3.client('kinesis')
         self.stream_name = stream_name
         self.partition_key = partition_key
-        self.stream_freq = int(stream_freq)
 
     def put_record(self, data):
         try:

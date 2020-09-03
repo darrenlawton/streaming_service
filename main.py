@@ -31,18 +31,21 @@ if __name__ == '__main__':
     parser.add_argument('-u', help='AWS profile')
     args = parser.parse_args()
 
-    stream_name = config.STREAM_NAME
-    partition_key = config.PARTITION_KEY
     n_shards = int(args.s)
     aws_profile = args.u
+    epic_list = ['CS.D.BITCOIN.CFD.IP', 'CS.D.ETHUSD.CFD.IP']
+    stream_name = config.STREAM_NAME
+    partition_key = config.PARTITION_KEY
 
+    # Logger setup
     if not os.path.exists('logs'):
         os.mkdir('logs')
     file_handler = RotatingFileHandler('logs/steaming_service.log', maxBytes=10240, backupCount=10)
     file_handler.setFormatter\
         (logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
+    file_handler.setLevel(logging.WARNING)
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.ERROR)
     logger.addHandler(file_handler)
     logger.info('Streaming service startup')
 
@@ -53,6 +56,7 @@ if __name__ == '__main__':
         kinesis_stream = kinesis_stream.kinesisStream(stream_name, n_shards)
 
     if kinesis_stream.create_stream():
+        # Trigger consumer on seperate thread
         cons = multiprocessing.Process(name='consumer', target=trigger_consumer, args=(stream_name, ))
         start_process(cons)
 
@@ -60,10 +64,12 @@ if __name__ == '__main__':
         # make while loop here for input start time and input end time
         producer = kinesis_producer.kinesisProducer(stream_name, partition_key)
         ig_client = generator.ig_streamer(secrets.API_key, secrets.login_details)
-        ig_client.trigger_stream(producer.run, ['MARKET:CS.D.BITCOIN.CFD.IP', 'MARKET:CS.D.ETHUSD.CFD.IP'])
+        ig_client.trigger_stream(producer.run, epic_list)
 
-        time.sleep(90)
+        time.sleep(30)
         ig_client.disconnect_session()
+        time.sleep(config.CONSUMER_STREAM_FREQ)
+        cons.kill()
         kinesis_stream.terminate_stream()
 
-# python3.6 src/stream_launcher.py -n "test" -p  "test" -s 1
+# python3.6 src/stream_launcher.py -s 1
