@@ -1,3 +1,6 @@
+# Logging config
+LOGGER_NAME = 'streaming'
+
 # AWS Kinesis Stream
 STREAM_NAME = 'pxserve'
 PARTITION_KEY = 'pxserve'
@@ -14,3 +17,6 @@ LIGHTSTREAMER_SUBSCRIPTION = 'DISTINCT'
 DATA_TO_STREAM = ['UTM','BID', 'OFFER', 'LTP', 'LTV']
 LEFT_ID = 'CHART:'
 RIGHT_ID = ':TICK'
+
+# Data Storage
+HOLDING_FOLDER = 'holding_folder'

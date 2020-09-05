@@ -3,7 +3,7 @@ from IGPrices.streaming_client import IG_streaming_session
 import logging
 import config
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(config.LOGGER_NAME)
 
 
 class ig_streamer:
@@ -14,7 +14,7 @@ class ig_streamer:
 
     def trigger_stream(self, listening_method, epic_list):
         formatted_epic_list = [config.LEFT_ID + epic + config.RIGHT_ID for epic in epic_list]
-        if not self.session is None:
+        if self.session is not None:
             px_subscription = Subscription(config.LIGHTSTREAMER_SUBSCRIPTION, formatted_epic_list,
                                            config.DATA_TO_STREAM)
             px_subscription.addlistener(listening_method)
@@ -25,4 +25,3 @@ class ig_streamer:
     def disconnect_session(self):
         self.session.disconnect_session()
         self.session = None
-

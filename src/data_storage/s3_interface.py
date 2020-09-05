@@ -1,6 +1,9 @@
 import logging
 import boto3
 from botocore.exceptions import ClientError
+import config
+
+logger = logging.getLogger(config.LOGGER_NAME)
 
 
 def upload_file(file_name, bucket, object_name=None):
@@ -20,7 +23,7 @@ def upload_file(file_name, bucket, object_name=None):
     try:
         response = s3_client.upload_file(file_name, bucket, object_name)
     except ClientError as e:
-        logging.error(e)
+        logger.error(e)
         return False
 
     return True

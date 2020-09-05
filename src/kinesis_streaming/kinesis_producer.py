@@ -6,7 +6,7 @@ import pickle
 from botocore.exceptions import ClientError
 import config
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(config.LOGGER_NAME)
 
 
 class kinesisProducer(threading.Thread):

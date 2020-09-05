@@ -6,7 +6,7 @@ from botocore.exceptions import ClientError
 import config
 from src.data_storage import writer
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(config.LOGGER_NAME)
 
 
 class kinesisConsumer:
@@ -52,7 +52,7 @@ class kinesisConsumer:
                 time.sleep(self.stream_freq)
 
             except ClientError as e:
-                print("Error occurred whilst consuming stream {}".format(e))
+                logger.error("Error occurred whilst consuming stream {}".format(e))
                 time.sleep(1)
 
 

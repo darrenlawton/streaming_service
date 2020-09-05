@@ -8,7 +8,7 @@ import argparse
 import multiprocessing
 import datetime
 import logging
-from logging.handlers import RotatingFileHandler
+from logging.handlers import TimedRotatingFileHandler
 import secrets
 import time
 
@@ -25,6 +25,26 @@ def start_process(process_obj):
         print(process_obj.name + " process started at %s ." % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
 
+def get_file_handler():
+    if not os.path.exists('logs'):
+        os.mkdir('logs')
+
+    file_handler = TimedRotatingFileHandler\
+        ('logs/steaming_service.log', when='midnight', utc=True, backupCount=10)
+    file_handler.setFormatter \
+        (logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
+    file_handler.setLevel(logging.WARNING)
+    return file_handler
+
+
+def get_logger(logger_name):
+    logger = logging.getLogger(config.LOGGER_NAME)
+    logger.setLevel(logging.DEBUG)  # better to have too much log than not enough
+    logger.addHandler(get_file_handler())
+    logger.propagate = False
+    return logger
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Let\'s get streamy.')
     parser.add_argument('-s', help='Number of shards', required=True)
@@ -37,16 +57,8 @@ if __name__ == '__main__':
     stream_name = config.STREAM_NAME
     partition_key = config.PARTITION_KEY
 
-    # Logger setup
-    if not os.path.exists('logs'):
-        os.mkdir('logs')
-    file_handler = RotatingFileHandler('logs/steaming_service.log', maxBytes=10240, backupCount=10)
-    file_handler.setFormatter\
-        (logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
-    file_handler.setLevel(logging.WARNING)
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.ERROR)
-    logger.addHandler(file_handler)
+    # create logger
+    logger = get_logger(config.LOGGER_NAME)
     logger.info('Streaming service startup')
 
     # Create kinesis stream
@@ -69,7 +81,7 @@ if __name__ == '__main__':
         time.sleep(30)
         ig_client.disconnect_session()
         time.sleep(config.CONSUMER_STREAM_FREQ)
-        cons.kill()
+        cons.terminate()
         kinesis_stream.terminate_stream()
 
 # python3.6 src/stream_launcher.py -s 1
