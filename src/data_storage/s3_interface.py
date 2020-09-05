@@ -34,6 +34,7 @@ def get_object_name(epic_id, stream_date):
 
 def migrate_local_directory(directory=config.HOLDING_FOLDER, stream_date=date.today()):
     files = glob.glob(os.path.join(directory, '*'))
+    upload = None
     if files:
         for file in files:
             epic_id = os.path.basename(file)

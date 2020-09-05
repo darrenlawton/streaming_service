@@ -51,7 +51,7 @@ def time_keeper(start_date, start_time: list, streaming_time):
     dt = datetime(start_date.year, start_date.month, start_date.day, start_hour, start_minute, 0, 0)
     # check if start time before current time. If so, exit.
     if datetime.now() > dt:
-        logger.debug("You'll need a time machine for this stream")
+        logger.error("You'll need a time machine for this stream")
         return False
     else:
         pause.until(dt)
@@ -83,6 +83,7 @@ if __name__ == '__main__':
     partition_key = config.PARTITION_KEY
 
     # create logger
+    global logger
     logger = get_logger(config.LOGGER_NAME)
     logger.info('Streaming service startup')
 
@@ -119,6 +120,7 @@ if __name__ == '__main__':
         kinesis_stream.terminate_stream()
 
         # move files to s3
-        s3_interface.migrate_local_directory(config.HOLDING_FOLDER, start_date)
+        if not s3_interface.migrate_local_directory(config.HOLDING_FOLDER, start_date):
+            logger.debug("Upload not made.")
 
-# python3 main.py -e CS.D.BITCOIN.CFD.IP CS.D.ETHUSD.CFD.IP -d 5/9/2020 -t 60 -s 1
+# python3 main.py -e CS.D.BITCOIN.CFD.IP CS.D.ETHUSD.CFD.IP -d 5/9/2020 -f 22 34 -t 60 -s 1
