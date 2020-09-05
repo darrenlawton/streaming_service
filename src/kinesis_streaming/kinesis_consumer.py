@@ -61,5 +61,4 @@ class consumeData(kinesisConsumer):
     def process_records(records):
         for r in records:
             data = pickle.loads(r['Data'])
-            print(data)
             writer.write_to_csv(data)

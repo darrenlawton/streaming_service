@@ -2,6 +2,7 @@ from src.kinesis_streaming import kinesis_stream
 from src.kinesis_streaming import kinesis_producer
 from src.kinesis_streaming import kinesis_consumer
 from src.generator import generator
+from src.data_storage import s3_interface
 import config
 import os, sys
 import argparse
@@ -47,7 +48,7 @@ def get_logger(logger_name):
 
 
 def time_keeper(start_date, streaming_time):
-    dt = datetime(start_date.year, start_date.month, start_date.day, 17, 32, 0, 0)
+    dt = datetime(start_date.year, start_date.month, start_date.day, 20, 47, 0, 0)
     pause.until(dt)
     logger.info("Time to start streaming.")
     return dt + timedelta(seconds=streaming_time)
@@ -83,15 +84,15 @@ if __name__ == '__main__':
     else:
         kinesis_stream = kinesis_stream.kinesisStream(stream_name, n_shards)
 
-    # Check date, ensure on midnight of date to stream
-    # if datetime.now() > start_date: sys.exit("You'll need a time machine for this stream")
-    end_time = time_keeper(start_date, streaming_time)
-    print(end_time)
-
     if kinesis_stream.create_stream():
         # Trigger consumer on seperate thread
+        s3_interface.clear_local_directory(config.HOLDING_FOLDER)
         cons = multiprocessing.Process(name='consumer', target=trigger_consumer, args=(stream_name, ))
         start_process(cons)
+
+        # Check date, ensure on midnight of date to stream
+        # if datetime.now() > start_date: sys.exit("You'll need a time machine for this stream")
+        end_time = time_keeper(start_date, streaming_time)
 
         # create producer
         producer = kinesis_producer.kinesisProducer(stream_name, partition_key)
@@ -109,6 +110,6 @@ if __name__ == '__main__':
         kinesis_stream.terminate_stream()
 
         # move files to s3
-
+        s3_interface.migrate_local_directory(config.HOLDING_FOLDER, start_date)
 
 # python3 main.py -e CS.D.BITCOIN.CFD.IP CS.D.ETHUSD.CFD.IP -d 5/9/2020 -t 60 -s 1
