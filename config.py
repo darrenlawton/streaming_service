@@ -27,4 +27,4 @@ HOLDING_FOLDER = 'holding_folder'
 # IG Login Details
 import secrets
 IG_API_KEY = secrets.API_key
-IG_LOGIN_DETAILS = secrets.login_details
+IG_LOGIN_DETAILS = {'username':secrets.ig_username, 'password': secrets.ig_password}

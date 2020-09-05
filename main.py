@@ -42,15 +42,21 @@ def get_logger(logger_name):
     logger = logging.getLogger(config.LOGGER_NAME)
     logger.setLevel(logging.INFO)  # better to have too much log than not enough
     logger.addHandler(get_file_handler())
-    logger.propagate = False
     return logger
 
 
-def time_keeper(start_date, streaming_time):
-    dt = datetime(start_date.year, start_date.month, start_date.day, 20, 47, 0, 0)
-    pause.until(dt)
-    logger.info("Time to start streaming.")
-    return dt + timedelta(seconds=streaming_time)
+def time_keeper(start_date, start_time: list, streaming_time):
+    start_hour = int(start_time[0])
+    start_minute = int(start_time[1])
+    dt = datetime(start_date.year, start_date.month, start_date.day, start_hour, start_minute, 0, 0)
+    # check if start time before current time. If so, exit.
+    if datetime.now() > dt:
+        logger.debug("You'll need a time machine for this stream")
+        return False
+    else:
+        pause.until(dt)
+        logger.info("Time to start streaming.")
+        return dt + timedelta(seconds=streaming_time)
 
 
 if __name__ == '__main__':
@@ -59,6 +65,8 @@ if __name__ == '__main__':
                         nargs="*", type=str, required=True)
     parser.add_argument('-d', help='Start date for stream',
                         type=lambda s: datetime.strptime(s, '%d/%m/%Y'), required=True)
+    parser.add_argument('-f', help='Start time hour minute',
+                        nargs="*", default='0 0')
     parser.add_argument('-t', help='Number of seconds to stream', type=int,
                         default=86400)
     parser.add_argument('-s', help='Number of shards', required=True)
@@ -69,6 +77,7 @@ if __name__ == '__main__':
     aws_profile = args.u
     epic_list = args.e
     start_date = args.d
+    start_time = args.f
     streaming_time = args.t
     stream_name = config.STREAM_NAME
     partition_key = config.PARTITION_KEY
@@ -90,21 +99,22 @@ if __name__ == '__main__':
         start_process(cons)
 
         # Check date, ensure on midnight of date to stream
-        # if datetime.now() > start_date: sys.exit("You'll need a time machine for this stream")
-        end_time = time_keeper(start_date, streaming_time)
+        end_time = time_keeper(start_date, start_time, streaming_time)
 
-        # create producer
-        producer = kinesis_producer.kinesisProducer(stream_name, partition_key)
-        ig_client = generator.ig_streamer(config.IG_API_KEY, config.IG_LOGIN_DETAILS)
-        ig_client.trigger_stream(producer.run, epic_list)
+        if end_time:
+            # create producer
+            producer = kinesis_producer.kinesisProducer(stream_name, partition_key)
+            ig_client = generator.ig_streamer(config.IG_API_KEY, config.IG_LOGIN_DETAILS)
+            ig_client.trigger_stream(producer.run, epic_list)
 
-        # stream data until end_time
-        while datetime.now() < end_time:
-            time.sleep(1)
+            # stream data until end_time
+            while datetime.now() < end_time:
+                time.sleep(1)
 
-        ig_client.disconnect_session()
-        # allow consumer additional time to finalise data
-        time.sleep(config.CONSUMER_STREAM_FREQ)
+            ig_client.disconnect_session()
+            # allow consumer additional time to finalise data
+            time.sleep(config.CONSUMER_STREAM_FREQ)
+
         cons.terminate()
         kinesis_stream.terminate_stream()
 
