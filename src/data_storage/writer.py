@@ -10,9 +10,9 @@ logger = logging.getLogger(config.LOGGER_NAME)
 def write_to_csv(data):
     name = data['name'][len(config.LEFT_ID):(len(data['name'])-len(config.RIGHT_ID))]
     values = data['values']
-    filepath = get_file(name, list(values.keys()))
 
     if values['UTM'] is not None:
+        filepath = get_file(name, list(values.keys()))
         update_time = values['UTM']
         values['UTM'] = convert_timestamp(update_time)
         with open(filepath, 'a+', newline='') as csv_file:
