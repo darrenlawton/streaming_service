@@ -10,7 +10,6 @@ import multiprocessing
 from datetime import datetime, timedelta
 import logging
 from logging.handlers import TimedRotatingFileHandler
-import secrets
 import time
 import pause
 
@@ -96,7 +95,7 @@ if __name__ == '__main__':
 
         # create producer
         producer = kinesis_producer.kinesisProducer(stream_name, partition_key)
-        ig_client = generator.ig_streamer(secrets.API_key, secrets.login_details)
+        ig_client = generator.ig_streamer(config.IG_API_KEY, config.IG_LOGIN_DETAILS)
         ig_client.trigger_stream(producer.run, epic_list)
 
         # stream data until end_time

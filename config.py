@@ -23,3 +23,8 @@ RIGHT_ID = ':TICK'
 
 # Data Storage
 HOLDING_FOLDER = 'holding_folder'
+
+# IG Login Details
+import secrets
+IG_API_KEY = secrets.API_key
+IG_LOGIN_DETAILS = secrets.login_details
