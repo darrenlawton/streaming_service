@@ -24,6 +24,9 @@ def get_file(name, fieldnames):
     filename = name.replace('.', '') + '.csv'
     filepath = os.path.join(config.HOLDING_FOLDER, filename)
     if not os.path.exists(filepath):
+        if not os.path.exists(config.HOLDING_FOLDER):
+            os.mkdir(config.HOLDING_FOLDER)
+
         with open(filepath, 'w') as csv_file:
             dict_writer = DictWriter(csv_file, fieldnames=fieldnames)
             dict_writer.writeheader()

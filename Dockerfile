@@ -1,22 +1,23 @@
-FROM python:3.6-alpine
+FROM python:3.6
 
-RUN adduser -D pxserve
+RUN adduser pxserve
 
 WORKDIR /home/streaming_service
 
-RUN apt-get update
-
 COPY requirements.txt requirements.txt
+COPY dependency/IGPrices-1.0-py3-none-any.whl dependency/IGPrices-1.0-py3-none-any.whl
+
 RUN python -m venv venv
-RUN pip3 install --upgrade pip -r requirements.txt
-RUN pip3 install --upgrade pip dependency/IGPrices-1.0-py3-none-any.whl
+RUN venv/bin/pip install --upgrade pip
+RUN venv/bin/pip install -r requirements.txt
+RUN venv/bin/pip install dependency/IGPrices-1.0-py3-none-any.whl
 
 COPY src src
-COPY main.py config.py boot.sh ./
-RUN chmod +x boot.sh
+COPY main.py config.py ./
 
 RUN chown -R pxserve:pxserve ./
 USER pxserve
 
-#ENTRYPOINT ["./boot.sh"]
-#CMD [ "python3.6", "stream_launcher.py"]
+ENTRYPOINT ["venv/bin/python","main.py"]
+
+# python3 main.py -e CS.D.BITCOIN.CFD.IP CS.D.ETHUSD.CFD.IP -d 6/9/2020 -f 13 36 -t 60 -s

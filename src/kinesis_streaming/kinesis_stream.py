@@ -10,12 +10,11 @@ logger = logging.getLogger(config.LOGGER_NAME)
 
 
 class kinesisStream:
-    def __init__(self, stream_name, n_shards, aws_profile='default'):
+    def __init__(self, stream_name, n_shards):
         self.stream_name = stream_name
         self.n_shards = n_shards
 
         try:
-            os.environ['AWS_PROFILE'] = aws_profile
             self.client = boto3.client('kinesis')
         except:
             logger.error("Error, could not configure AWS profile.")

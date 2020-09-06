@@ -52,8 +52,9 @@ def time_keeper(start_date, start_time: list, streaming_time):
     # check if start time before current time. If so, exit.
     if datetime.now() > dt:
         logger.error("You'll need a time machine for this stream")
-        return False
+        return None
     else:
+        logger.error("Pausing until " + str(dt) + ".")
         pause.until(dt)
         logger.info("Time to start streaming.")
         return dt + timedelta(seconds=streaming_time)
@@ -70,11 +71,9 @@ if __name__ == '__main__':
     parser.add_argument('-t', help='Number of seconds to stream', type=int,
                         default=86400)
     parser.add_argument('-s', help='Number of shards', required=True)
-    parser.add_argument('-u', help='AWS profile')
     args = parser.parse_args()
 
     n_shards = int(args.s)
-    aws_profile = args.u
     epic_list = args.e
     start_date = args.d
     start_time = args.f
@@ -88,10 +87,7 @@ if __name__ == '__main__':
     logger.info('Streaming service startup')
 
     # Create kinesis stream
-    if aws_profile:
-        kinesis_stream = kinesis_stream.kinesisStream(stream_name, n_shards, aws_profile)
-    else:
-        kinesis_stream = kinesis_stream.kinesisStream(stream_name, n_shards)
+    kinesis_stream = kinesis_stream.kinesisStream(stream_name, n_shards)
 
     if kinesis_stream.create_stream():
         # Trigger consumer on seperate thread

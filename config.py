@@ -1,3 +1,4 @@
+import os
 # Logging config
 LOGGER_NAME = 'streaming'
 
@@ -25,6 +26,6 @@ RIGHT_ID = ':TICK'
 HOLDING_FOLDER = 'holding_folder'
 
 # IG Login Details
-import secrets
-IG_API_KEY = secrets.API_key
-IG_LOGIN_DETAILS = {'username':secrets.ig_username, 'password': secrets.ig_password}
+
+IG_API_KEY = os.environ.get('IG_API_KEY')
+IG_LOGIN_DETAILS = {'username': os.environ.get('ig_username'), 'password': os.environ.get('ig_password')}
