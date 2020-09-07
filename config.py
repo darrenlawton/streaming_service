@@ -26,6 +26,5 @@ RIGHT_ID = ':TICK'
 HOLDING_FOLDER = 'holding_folder'
 
 # IG Login Details
-
 IG_API_KEY = os.environ.get('IG_API_KEY')
 IG_LOGIN_DETAILS = {'username': os.environ.get('ig_username'), 'password': os.environ.get('ig_password')}

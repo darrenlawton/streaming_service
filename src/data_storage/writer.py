@@ -31,6 +31,8 @@ def get_file(name, fieldnames):
             dict_writer = DictWriter(csv_file, fieldnames=fieldnames)
             dict_writer.writeheader()
 
+        logger.info("Created directory: " + str(filepath))
+
     return filepath
 
 

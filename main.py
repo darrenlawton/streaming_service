@@ -54,7 +54,7 @@ def time_keeper(start_date, start_time: list, streaming_time):
         logger.error("You'll need a time machine for this stream")
         return None
     else:
-        logger.error("Pausing until " + str(dt) + ".")
+        logger.info("Pausing until " + str(dt) + ".")
         pause.until(dt)
         logger.info("Time to start streaming.")
         return dt + timedelta(seconds=streaming_time)
@@ -119,4 +119,3 @@ if __name__ == '__main__':
         if not s3_interface.migrate_local_directory(config.HOLDING_FOLDER, start_date):
             logger.debug("Upload not made.")
 
-# python3 main.py -e CS.D.BITCOIN.CFD.IP CS.D.ETHUSD.CFD.IP -d 5/9/2020 -f 22 34 -t 60 -s 1

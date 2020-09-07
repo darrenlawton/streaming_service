@@ -3,6 +3,9 @@ FROM python:3.6
 RUN adduser pxserve
 
 WORKDIR /home/streaming_service
+RUN mkdir logs
+RUN mkdir holding_folder
+
 
 COPY requirements.txt requirements.txt
 COPY dependency/IGPrices-1.0-py3-none-any.whl dependency/IGPrices-1.0-py3-none-any.whl
